@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esercizi SQL Server</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: #1ba94c;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .title-section {
+            margin-bottom: 30px;
+        }
+
+        .title-section h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: #1ba94c;
+            color: white;
+            border-color: #1ba94c;
+        }
+
+        .challenges-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .challenge-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .challenge-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .challenge-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .difficulty.easy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .difficulty.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .difficulty.hard {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .problem-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #f0f0f0;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        .btn-run {
+            background: #0073e6;
+            color: white;
+        }
+
+        .btn-submit {
+            background: #1ba94c;
+            color: white;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .error {
+            color: #721c24;
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">MS-SQL</div>
+    </div>
+
+    <div class="container">
+        <div class="title-section">
+            <h1>Esercizi SQl con Moussa.</h1>
+            <p>Risolvi 35 sfide SQL</p>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterChallenges('all')">Tutte (35)</button>
+            <button class="filter-btn" onclick="filterChallenges('easy')">Facile (15)</button>
+            <button class="filter-btn" onclick="filterChallenges('medium')">Medio (12)</button>
+            <button class="filter-btn" onclick="filterChallenges('hard')">Difficile (8)</button>
+        </div>
+
+        <div class="challenges-grid" id="grid"></div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="problem-box" id="problem"></div>
+            <div id="sampleTable"></div>
+            <h3>La tua soluzione:</h3>
+            <textarea id="editor" placeholder="SELECT * FROM table_name"></textarea>
+            <div>
+                <button class="btn btn-run" onclick="runCode()">▶ Esegui</button>
+                <button class="btn btn-submit" onclick="submitCode()">✓ Invia</button>
+            </div>
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const DB = {
+            CITY: [
+                {ID:1,NAME:'New York',COUNTRYCODE:'USA',POPULATION:8500000},
+                {ID:2,NAME:'Los Angeles',COUNTRYCODE:'USA',POPULATION:4000000},
+                {ID:3,NAME:'Tokyo',COUNTRYCODE:'JPN',POPULATION:13960000},
+                {ID:1661,NAME:'Chicago',COUNTRYCODE:'USA',POPULATION:2700000},
+                {ID:5,NAME:'Osaka',COUNTRYCODE:'JPN',POPULATION:2725000},
+                {ID:6,NAME:'Miami',COUNTRYCODE:'USA',POPULATION:450000},
+                {ID:7,NAME:'London',COUNTRYCODE:'GBR',POPULATION:9000000},
+                {ID:8,NAME:'Paris',COUNTRYCODE:'FRA',POPULATION:2200000},
+                {ID:9,NAME:'Berlin',COUNTRYCODE:'DEU',POPULATION:3700000},
+                {ID:10,NAME:'Madrid',COUNTRYCODE:'ESP',POPULATION:3200000},
+                {ID:11,NAME:'Rome',COUNTRYCODE:'ITA',POPULATION:2800000},
+                {ID:12,NAME:'Sydney',COUNTRYCODE:'AUS',POPULATION:5300000}
+            ],
+            EMPLOYEE: [
+                {ID:1,NAME:'John',SALARY:3000,MONTHS:8,DEPT:'IT'},
+                {ID:2,NAME:'Jane',SALARY:2500,MONTHS:12,DEPT:'HR'},
+                {ID:3,NAME:'Bob',SALARY:1800,MONTHS:6,DEPT:'Sales'},
+                {ID:4,NAME:'Alice',SALARY:4000,MONTHS:15,DEPT:'IT'},
+                {ID:5,NAME:'Charlie',SALARY:2200,MONTHS:9,DEPT:'Marketing'}
+            ],
+            STUDENTS: [
+                {ID:1,NAME:'Alice',MARKS:88},
+                {ID:2,NAME:'Bob',MARKS:75},
+                {ID:3,NAME:'Charlie',MARKS:92},
+                {ID:4,NAME:'Diana',MARKS:68},
+                {ID:5,NAME:'Eve',MARKS:85}
+            ],
+            ORDERS: [
+                {ID:101,CUSTOMER:1,PRODUCT:'Laptop',PRICE:1200,QTY:1},
+                {ID:102,CUSTOMER:2,PRODUCT:'Mouse',PRICE:25,QTY:2},
+                {ID:103,CUSTOMER:1,PRODUCT:'Keyboard',PRICE:75,QTY:1},
+                {ID:104,CUSTOMER:3,PRODUCT:'Monitor',PRICE:300,QTY:2}
+            ]
+        };
+
+        const challenges = [
+            {id:1,title:"Select All",difficulty:"easy",desc:"Query tutti i dati da CITY",table:"CITY",score:10},
+            {id:2,title:"Select By ID",difficulty:"easy",desc:"Query la città con ID = 1661",table:"CITY",score:10},
+            {id:3,title:"Japanese Cities",difficulty:"easy",desc:"Query le città giapponesi (JPN)",table:"CITY",score:10},
+            {id:4,title:"City Names",difficulty:"easy",desc:"Query solo i nomi delle città",table:"CITY",score:10},
+            {id:5,title:"High Population",difficulty:"easy",desc:"Città USA con popolazione > 100000",table:"CITY",score:10},
+            {id:6,title:"Count Cities",difficulty:"easy",desc:"Conta il numero di città",table:"CITY",score:10},
+            {id:7,title:"Average Population",difficulty:"easy",desc:"Popolazione media delle città",table:"CITY",score:10},
+            {id:8,title:"Employee Names",difficulty:"easy",desc:"Query i nomi di tutti i dipendenti",table:"EMPLOYEE",score:10},
+            {id:9,title:"High Salaries",difficulty:"easy",desc:"Dipendenti con SALARY > 2000 e MONTHS < 10",table:"EMPLOYEE",score:10},
+            {id:10,title:"IT Department",difficulty:"easy",desc:"Query dipendenti del dipartimento IT",table:"EMPLOYEE",score:10},
+            {id:11,title:"Top Students",difficulty:"easy",desc:"Studenti con MARKS >= 85",table:"STUDENTS",score:10},
+            {id:12,title:"Order by Name",difficulty:"easy",desc:"Tutti gli studenti ordinati per nome",table:"STUDENTS",score:10},
+            {id:13,title:"Student Count",difficulty:"easy",desc:"Conta gli studenti",table:"STUDENTS",score:10},
+            {id:14,title:"Expensive Orders",difficulty:"easy",desc:"Ordini con PRICE > 100",table:"ORDERS",score:10},
+            {id:15,title:"Laptop Orders",difficulty:"easy",desc:"Query gli ordini di Laptop",table:"ORDERS",score:10},
+            
+            {id:16,title:"Top 3 Cities",difficulty:"medium",desc:"Le 3 città più popolose",table:"CITY",score:20},
+            {id:17,title:"European Cities",difficulty:"medium",desc:"Città europee (GBR, FRA, DEU, ESP, ITA)",table:"CITY",score:20},
+            {id:18,title:"Cities with A",difficulty:"medium",desc:"Città che iniziano con A",table:"CITY",score:20},
+            {id:19,title:"Sum Population USA",difficulty:"medium",desc:"Popolazione totale città USA",table:"CITY",score:20},
+            {id:20,title:"Max Salary",difficulty:"medium",desc:"Stipendio massimo",table:"EMPLOYEE",score:20},
+            {id:21,title:"Min Salary",difficulty:"medium",desc:"Stipendio minimo",table:"EMPLOYEE",score:20},
+            {id:22,title:"Top 3 Salaries",difficulty:"medium",desc:"I 3 stipendi più alti",table:"EMPLOYEE",score:20},
+            {id:23,title:"Max Marks",difficulty:"medium",desc:"Voto massimo tra gli studenti",table:"STUDENTS",score:20},
+            {id:24,title:"Top 3 Students",difficulty:"medium",desc:"I 3 studenti con voti più alti",table:"STUDENTS",score:20},
+            {id:25,title:"Order by Marks DESC",difficulty:"medium",desc:"Studenti ordinati per voti decrescenti",table:"STUDENTS",score:20},
+            {id:26,title:"Total Order Value",difficulty:"medium",desc:"Somma di PRICE * QTY di tutti gli ordini",table:"ORDERS",score:25},
+            {id:27,title:"Average Order Price",difficulty:"medium",desc:"Prezzo medio degli ordini",table:"ORDERS",score:20},
+            
+            {id:28,title:"Top 5 Cities",difficulty:"hard",desc:"Le 5 città più popolose",table:"CITY",score:30},
+            {id:29,title:"Asia Population",difficulty:"hard",desc:"Popolazione totale città asiatiche (JPN)",table:"CITY",score:30},
+            {id:30,title:"Cities Long Names",difficulty:"hard",desc:"Città con nome più lungo di 6 caratteri",table:"CITY",score:30},
+            {id:31,title:"Salary Range",difficulty:"hard",desc:"Dipendenti con stipendio tra 2000 e 3500",table:"EMPLOYEE",score:35},
+            {id:32,title:"Non-IT Employees",difficulty:"hard",desc:"Dipendenti NON nel dipartimento IT",table:"EMPLOYEE",score:30},
+            {id:33,title:"Students Below 80",difficulty:"hard",desc:"Studenti con voti < 80",table:"STUDENTS",score:30},
+            {id:34,title:"Specific Customer Orders",difficulty:"hard",desc:"Ordini del cliente 1",table:"ORDERS",score:30},
+            {id:35,title:"Orders Count",difficulty:"hard",desc:"Conta il numero di ordini",table:"ORDERS",score:30}
+        ];
+
+        let current = null;
+        let currentFilter = 'all';
+
+        function renderChallenges() {
+            const grid = document.getElementById('grid');
+            const filtered = currentFilter === 'all' ? challenges : challenges.filter(c => c.difficulty === currentFilter);
+            
+            grid.innerHTML = filtered.map(c => `
+                <div class="challenge-card" onclick="openChallenge(${c.id})">
+                    <div class="challenge-title">${c.title}</div>
+                    <span class="difficulty ${c.difficulty}">${c.difficulty.toUpperCase()}</span>
+                    <span style="margin-left:10px">Punti: ${c.score}</span>
+                </div>
+            `).join('');
+        }
+
+        function filterChallenges(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderChallenges();
+        }
+
+        function openChallenge(id) {
+            current = challenges.find(c => c.id === id);
+            document.getElementById('modalTitle').textContent = current.title;
+            document.getElementById('problem').innerHTML = `
+                <p><strong>Difficoltà:</strong> <span class="difficulty ${current.difficulty}">${current.difficulty.toUpperCase()}</span></p>
+                <p><strong>Punti:</strong> ${current.score}</p>
+                <p style="margin-top:15px">${current.desc}</p>
+            `;
+            
+            const data = DB[current.table].slice(0, 3);
+            const cols = Object.keys(data[0]);
+            document.getElementById('sampleTable').innerHTML = `
+                <h4>Tabella: ${current.table}</h4>
+                <table>
+                    <thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+                    <tbody>${data.map(row => `<tr>${cols.map(c => `<td>${row[c]}</td>`).join('')}</tr>`).join('')}</tbody>
+                </table>
+            `;
+            
+            document.getElementById('editor').value = '';
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function executeSQL(query) {
+            const q = query.toUpperCase().trim();
+            let data = JSON.parse(JSON.stringify(DB[current.table]));
+            
+            // WHERE
+            if (q.includes('WHERE')) {
+                const whereMatch = q.match(/WHERE\s+(.+?)(?:\s+ORDER|\s+LIMIT|$)/);
+                if (whereMatch) {
+                    const cond = whereMatch[1];
+                    data = data.filter(row => {
+                        if (cond.includes('>=')) {
+                            const [col, val] = cond.split('>=').map(s => s.trim());
+                            return row[col] >= Number(val);
+                        }
+                        if (cond.includes('<=')) {
+                            const [col, val] = cond.split('<=').map(s => s.trim());
+                            return row[col] <= Number(val);
+                        }
+                        if (cond.includes('>')) {
+                            const [col, val] = cond.split('>').map(s => s.trim());
+                            return row[col] > Number(val);
+                        }
+                        if (cond.includes('<')) {
+                            const [col, val] = cond.split('<').map(s => s.trim());
+                            return row[col] < Number(val);
+                        }
+                        if (cond.includes('!=')) {
+                            const [col, val] = cond.split('!=').map(s => s.trim());
+                            return row[col] != val.replace(/'/g, '');
+                        }
+                        if (cond.includes('=')) {
+                            const [col, val] = cond.split('=').map(s => s.trim());
+                            const cleanVal = val.replace(/'/g, '');
+                            return row[col] == (isNaN(cleanVal) ? cleanVal : Number(cleanVal));
+                        }
+                        if (cond.includes(' AND ')) {
+                            const parts = cond.split(' AND ');
+                            return parts.every(p => {
+                                if (p.includes('>')) {
+                                    const [col, val] = p.split('>').map(s => s.trim());
+                                    return row[col] > Number(val);
+                                }
+                                if (p.includes('<')) {
+                                    const [col, val] = p.split('<').map(s => s.trim());
+                                    return row[col] < Number(val);
+                                }
+                                if (p.includes('=')) {
+                                    const [col, val] = p.split('=').map(s => s.trim());
+                                    return row[col] == val.replace(/'/g, '');
+                                }
+                                return true;
+                            });
+                        }
+                        if (cond.includes(' IN ')) {
+                            const [col, vals] = cond.split(' IN ');
+                            const arr = vals.replace(/[()]/g, '').split(',').map(v => v.trim().replace(/'/g, ''));
+                            return arr.includes(String(row[col.trim()]));
+                        }
+                        if (cond.includes(' LIKE ')) {
+                            const [col, pattern] = cond.split(' LIKE ');
+                            const p = pattern.replace(/'/g, '').replace(/%/g, '');
+                            return String(row[col.trim()]).startsWith(p);
+                        }
+                        return true;
+                    });
+                }
+            }
+            
+            // Aggregates
+            if (q.includes('COUNT(*)')) return [{COUNT: data.length}];
+            if (q.includes('AVG(')) {
+                const col = q.match(/AVG\((\w+)\)/)[1];
+                return [{AVG: Math.round(data.reduce((s,r) => s + r[col], 0) / data.length)}];
+            }
+            if (q.includes('SUM(')) {
+                const match = q.match(/SUM\((.+?)\)/);
+                const expr = match[1];
+                if (expr.includes('*')) {
+                    const [c1, c2] = expr.split('*').map(s => s.trim());
+                    return [{SUM: data.reduce((s,r) => s + (r[c1] * r[c2]), 0)}];
+                }
+                return [{SUM: data.reduce((s,r) => s + r[expr], 0)}];
+            }
+            if (q.includes('MAX(')) {
+                const col = q.match(/MAX\((\w+)\)/)[1];
+                return [{MAX: Math.max(...data.map(r => r[col]))}];
+            }
+            if (q.includes('MIN(')) {
+                const col = q.match(/MIN\((\w+)\)/)[1];
+                return [{MIN: Math.min(...data.map(r => r[col]))}];
+            }
+            
+            // ORDER BY
+            if (q.includes('ORDER BY')) {
+                const orderMatch = q.match(/ORDER BY\s+(\w+)(\s+(ASC|DESC))?/);
+                if (orderMatch) {
+                    const col = orderMatch[1];
+                    const desc = orderMatch[3] === 'DESC';
+                    data.sort((a,b) => {
+                        if (typeof a[col] === 'string') {
+                            return desc ? b[col].localeCompare(a[col]) : a[col].localeCompare(b[col]);
+                        }
+                        return desc ? b[col] - a[col] : a[col] - b[col];
+                    });
+                }
+            }
+            
+            // LIMIT
+            if (q.includes('LIMIT')) {
+                const limit = parseInt(q.match(/LIMIT\s+(\d+)/)[1]);
+                data = data.slice(0, limit);
+            }
+            
+            // SELECT columns
+            const selectMatch = q.match(/SELECT\s+(.+?)\s+FROM/);
+            if (selectMatch && selectMatch[1] !== '*') {
+                const cols = selectMatch[1].split(',').map(c => c.trim());
+                data = data.map(row => {
+                    const obj = {};
+                    cols.forEach(c => obj[c] = row[c]);
+                    return obj;
+                });
+            }
+            
+            return data;
+        }
+
+        function runCode() {
+            const query = document.getElementById('editor').value;
+            const results = document.getElementById('results');
+            
+            if (!query.trim()) {
+                results.innerHTML = '<div class="error">Scrivi una query SQL</div>';
+                results.classList.add('show');
+                return;
+            }
+            
+            try {
+                const result = executeSQL(query);
+                if (result.length > 0) {
+                    const cols = Object.keys(result[0]);
+                    results.innerHTML = `
+                        <h3>✓ Risultati:</h3>
+                        <table>
+                            <thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+                            <tbody>${result.slice(0,10).map(r => `<tr>${cols.map(c => `<td>${r[c]}</td>`).join('')}</tr>`).join('')}</tbody>
+                        </table>
+                        <p>Righe: ${result.length}</p>
+                    `;
+                } else {
+                    results.innerHTML = '<div class="error">Nessun risultato</div>';
+                }
+                results.classList.add('show');
+            } catch (e) {
+                results.innerHTML = `<div class="error">Errore: ${e.message}</div>`;
+                results.classList.add('show');
+            }
+        }
+
+        function submitCode() {
+            runCode();
+            const results = document.getElementById('results');
+            if (!results.innerHTML.includes('Errore') && !results.innerHTML.includes('Nessun')) {
+                results.innerHTML = `
+                    <div class="success">
+                        <h3>🎉 Successo!</h3>
+                        <p>Punteggio: ${current.score}/${current.score}</p>
+                    </div>
+                ` + results.innerHTML;
+            }
+        }
+
+        renderChallenges();
+    </script>
+</body>
+</html>
